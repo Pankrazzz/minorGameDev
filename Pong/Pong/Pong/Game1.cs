@@ -219,7 +219,7 @@ namespace Pong
             _spriteBatch.Draw(_border, new Rectangle(250, 100, BorderThickness, BorderSize), Color.White); // Left
             _spriteBatch.Draw(_border, new Rectangle(950, 100, BorderThickness, BorderSize), Color.White); // Right
 
-            // Draw the ball
+            // Draw the ball (square)
             _spriteBatch.Draw(_ball, ballPosition, Color.White);
 
             // Draw scores on each side
@@ -229,7 +229,6 @@ namespace Pong
             _spriteBatch.DrawString(_font, scores[3].ToString(), new Vector2(1000, 450), paddleColors[3]); // Right
 
 
-            // Draw paddles only if their score is greater than zero
             // Draw paddles only if their score is greater than zero
             for (int i = 0; i < 4; i++)
             {
