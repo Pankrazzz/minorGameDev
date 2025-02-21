@@ -42,6 +42,7 @@ namespace Pong
 
             paddlePositions = new Vector2[4]
             {
+                // Paddle positions
                 new Vector2(600 - PaddleHorizontalWidth / 2, 800 - PaddleMargin - PaddleHorizontalHeight), // Bottom
                 new Vector2(600 - PaddleHorizontalWidth / 2, 100 + PaddleMargin), // Top
                 new Vector2(250 + PaddleMargin, 450 - PaddleVerticalHeight / 2), // Left
