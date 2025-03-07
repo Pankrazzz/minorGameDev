@@ -3,6 +3,7 @@ using SpaceDefence.Collision;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace SpaceDefence
 {
@@ -16,6 +17,14 @@ namespace SpaceDefence
         private RectangleCollider _rectangleCollider;
         private Point target;
 
+        // Movement variables
+        private Vector2 velocity;
+        private Vector2 acceleration;
+        private float accelerationSpeed = 10f;
+        private float maxSpeed = 30f;
+        private float rotation;
+        private float decelerationFactor = 0.75f;
+
         /// <summary>
         /// The player character
         /// </summary>
@@ -24,6 +33,10 @@ namespace SpaceDefence
         {
             _rectangleCollider = new RectangleCollider(new Rectangle(Position, Point.Zero));
             SetCollider(_rectangleCollider);
+
+            velocity = Vector2.Zero;
+            acceleration = Vector2.Zero;
+            rotation = 0f;
         }
 
         public override void Load(ContentManager content)
@@ -43,7 +56,28 @@ namespace SpaceDefence
         {
             base.HandleInput(inputManager);
             target = inputManager.CurrentMouseState.Position;
-            if(inputManager.LeftMousePress())
+
+            // Handle movement input
+            acceleration = Vector2.Zero;
+            if (inputManager.IsKeyDown(Keys.W))
+                acceleration.Y -= 1;
+            if (inputManager.IsKeyDown(Keys.S))
+                acceleration.Y += 1;
+            if (inputManager.IsKeyDown(Keys.A))
+                acceleration.X -= 1;
+            if (inputManager.IsKeyDown(Keys.D))
+                acceleration.X += 1;
+
+            // Normalize the acceleration vector to ensure smooth 360-degree movement
+            if (acceleration != Vector2.Zero)
+            {
+                acceleration.Normalize();
+                acceleration *= accelerationSpeed;
+
+                rotation = (float)Math.Atan2(acceleration.X, -acceleration.Y);
+            }
+
+            if (inputManager.LeftMousePress())
             {
 
                 Vector2 aimDirection = LinePieceCollider.GetDirection(GetPosition().Center, target);
@@ -61,6 +95,27 @@ namespace SpaceDefence
 
         public override void Update(GameTime gameTime)
         {
+            float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // Update velocity based on acceleration
+            velocity += acceleration * deltaTime;
+
+            // Limit speed to maxSpeed
+            if (velocity.Length() > maxSpeed)
+            {
+                velocity.Normalize();
+                velocity *= maxSpeed;
+            }
+
+            // Apply gradual deceleration when no acceleration is being applied
+            if (acceleration == Vector2.Zero)
+            {
+                velocity *= (float)Math.Pow(decelerationFactor, deltaTime); // Gradually reduce velocity
+            }
+
+            // Update position based on velocity
+            _rectangleCollider.shape.Location += velocity.ToPoint();
+
             // Update the Buff timer
             if (buffTimer > 0)
                 buffTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -70,7 +125,19 @@ namespace SpaceDefence
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(ship_body, _rectangleCollider.shape, Color.White);
+            // Draw the ship body with rotation
+            spriteBatch.Draw(
+                ship_body,
+                _rectangleCollider.shape.Center.ToVector2(), // Position
+                null, // Source rectangle
+                Color.White, // Color
+                rotation, // Rotation angle
+                new Vector2(ship_body.Width / 2, ship_body.Height / 2), // Origin (center of the ship)
+                1f, // Scale
+                SpriteEffects.None, // Effects
+                0 // Layer depth
+            );
+
             float aimAngle = LinePieceCollider.GetAngle(LinePieceCollider.GetDirection(GetPosition().Center, target));
             if (buffTimer <= 0)
             {
