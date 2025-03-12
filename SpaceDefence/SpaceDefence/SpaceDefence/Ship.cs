@@ -77,13 +77,14 @@ namespace SpaceDefence
             {
                 Vector2 aimDirection = LinePieceCollider.GetDirection(GetPosition().Center, target);
                 Vector2 turretExit = _rectangleCollider.shape.Center.ToVector2() + aimDirection * base_turret.Height / 2f;
+                int screenWidth = GameManager.GetGameManager().Game.GraphicsDevice.Viewport.Width;
                 if (buffTimer <= 0)
                 {
                     GameManager.GetGameManager().AddGameObject(new Bullet(turretExit, aimDirection, 150));
                 }
                 else
                 {
-                    GameManager.GetGameManager().AddGameObject(new Laser(new LinePieceCollider(turretExit, target.ToVector2()), 400));
+                    GameManager.GetGameManager().AddGameObject(new Laser(new LinePieceCollider(turretExit, target.ToVector2()), screenWidth));
                 }
             }
         }
