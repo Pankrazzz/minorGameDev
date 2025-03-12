@@ -44,7 +44,6 @@ namespace SpaceDefence
             this.Radius = radius;
         }
 
-
         /// <summary>
         /// Gets whether or not the provided coordinates lie within the bounds of this Circle.
         /// </summary>
@@ -52,7 +51,7 @@ namespace SpaceDefence
         /// <returns>true if the coordinates are within the circle.</returns>
         public override bool Contains(Vector2 coordinates)
         {
-            return (Center-coordinates).Length() < Radius;
+            return (Center - coordinates).Length() < Radius;
         }
 
         /// <summary>
@@ -62,10 +61,9 @@ namespace SpaceDefence
         /// <returns>true there is any overlap between the two Circles.</returns>
         public override bool Intersects(CircleCollider other)
         {
-            // TODO Implement
-            return false;
+            float distance = Vector2.Distance(this.Center, other.Center);
+            return distance < (this.Radius + other.Radius);
         }
-
 
         /// <summary>
         /// Gets whether or not the Circle intersects the Rectangle.
@@ -74,9 +72,15 @@ namespace SpaceDefence
         /// <returns>true there is any overlap between the Circle and the Rectangle.</returns>
         public override bool Intersects(RectangleCollider other)
         {
-            // TODO Implement
-            return  false;
+            Vector2 closestPoint = new Vector2(
+                MathHelper.Clamp(Center.X, other.shape.Left, other.shape.Right),
+                MathHelper.Clamp(Center.Y, other.shape.Top, other.shape.Bottom)
+            );
+
+            float distance = Vector2.Distance(Center, closestPoint);
+            return distance < Radius;
         }
+
         /// <summary>
         /// Gets whether or not the Circle intersects the Line
         /// </summary>

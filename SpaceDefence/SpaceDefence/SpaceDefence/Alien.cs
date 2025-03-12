@@ -9,10 +9,12 @@ namespace SpaceDefence
         private CircleCollider _circleCollider;
         private Texture2D _texture;
         private float playerClearance = 100;
+        private float speed;
+        private static float baseSpeed = 50f;
 
-        public Alien() 
+        public Alien(float speedMultiplier = 1f)
         {
-            
+            speed = baseSpeed * speedMultiplier;
         }
 
         public override void Load(ContentManager content)
@@ -24,10 +26,40 @@ namespace SpaceDefence
             RandomMove();
         }
 
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+            MoveTowardsPlayer(gameTime);
+            CheckGameOver();
+        }
+
         public override void OnCollision(GameObject other)
         {
-            RandomMove();
+            if (other is Bullet)
+            {
+                GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().AddGameObject(new Alien(speed / baseSpeed + 0.1f));
+            }
             base.OnCollision(other);
+        }
+
+        private void MoveTowardsPlayer(GameTime gameTime)
+        {
+            GameManager gm = GameManager.GetGameManager();
+            Vector2 direction = gm.Player.GetPosition().Center.ToVector2() - _circleCollider.Center;
+            direction.Normalize();
+            _circleCollider.Center += direction * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+        }
+
+        private void CheckGameOver()
+        {
+            GameManager gm = GameManager.GetGameManager();
+            Vector2 centerOfPlayer = gm.Player.GetPosition().Center.ToVector2();
+            if ((_circleCollider.Center - centerOfPlayer).Length() < playerClearance)
+            {
+                // Game over logic here
+                gm.Game.Exit();
+            }
         }
 
         public void RandomMove()
@@ -45,7 +77,5 @@ namespace SpaceDefence
             spriteBatch.Draw(_texture, _circleCollider.GetBoundingBox(), Color.White);
             base.Draw(gameTime, spriteBatch);
         }
-
-
     }
 }
