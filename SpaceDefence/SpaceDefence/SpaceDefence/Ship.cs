@@ -20,8 +20,8 @@ namespace SpaceDefence
         // Movement variables
         private Vector2 velocity;
         private Vector2 acceleration;
-        private float accelerationSpeed = 10f;
-        private float maxSpeed = 30f;
+        private float accelerationSpeed = 7f;
+        private float maxSpeed = 25f;
         private float rotation;
         private float decelerationFactor = 0.75f;
 
@@ -117,6 +117,10 @@ namespace SpaceDefence
             {
                 rotation = (float)Math.Atan2(velocity.Y, velocity.X) + MathHelper.PiOver2;
             }
+
+            // Update collider position and rotation
+            _rectangleCollider.shape.Location = _rectangleCollider.shape.Center + velocity.ToPoint();
+            _rectangleCollider.shape.Location -= new Point(ship_body.Width / 2, ship_body.Height / 2);
 
             // Handle screen wrapping
             HandleScreenWrapping();

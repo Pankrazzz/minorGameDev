@@ -30,17 +30,21 @@ namespace SpaceDefence
         {
             base.Update(gameTime);
             MoveTowardsPlayer(gameTime);
-            CheckGameOver();
+            // CheckGameOver();
         }
 
         public override void OnCollision(GameObject other)
         {
-            if (other is Bullet)
+            if (other is Bullet || other is Laser)
             {
                 GameManager.GetGameManager().RemoveGameObject(this);
                 GameManager.GetGameManager().AddGameObject(new Alien(speed / baseSpeed + 0.1f));
+            } else if (other is Ship)
+            {
+                //Game over
+                GameManager.GetGameManager().Game.Exit();
             }
-            base.OnCollision(other);
+                base.OnCollision(other);
         }
 
         private void MoveTowardsPlayer(GameTime gameTime)
@@ -51,16 +55,16 @@ namespace SpaceDefence
             _circleCollider.Center += direction * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
-        private void CheckGameOver()
-        {
-            GameManager gm = GameManager.GetGameManager();
-            Vector2 centerOfPlayer = gm.Player.GetPosition().Center.ToVector2();
-            if ((_circleCollider.Center - centerOfPlayer).Length() < playerClearance)
-            {
-                // Game over logic here
-                gm.Game.Exit();
-            }
-        }
+        //private void CheckGameOver()
+        //{
+        //    GameManager gm = GameManager.GetGameManager();
+        //    Vector2 centerOfPlayer = gm.Player.GetPosition().Center.ToVector2();
+        //    if ((_circleCollider.Center - centerOfPlayer).Length() < playerClearance)
+        //    {
+        //        // Game over logic here
+        //        gm.Game.Exit();
+        //    }
+        //}
 
         public void RandomMove()
         {
