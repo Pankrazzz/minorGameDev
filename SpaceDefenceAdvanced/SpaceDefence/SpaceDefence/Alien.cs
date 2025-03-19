@@ -42,9 +42,9 @@ namespace SpaceDefence
             } else if (other is Ship)
             {
                 //Game over
-                GameManager.GetGameManager().Game.Exit();
+                ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
             }
-                base.OnCollision(other);
+            base.OnCollision(other);
         }
 
         private void MoveTowardsPlayer(GameTime gameTime)
@@ -54,17 +54,6 @@ namespace SpaceDefence
             direction.Normalize();
             _circleCollider.Center += direction * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
-
-        //private void CheckGameOver()
-        //{
-        //    GameManager gm = GameManager.GetGameManager();
-        //    Vector2 centerOfPlayer = gm.Player.GetPosition().Center.ToVector2();
-        //    if ((_circleCollider.Center - centerOfPlayer).Length() < playerClearance)
-        //    {
-        //        // Game over logic here
-        //        gm.Game.Exit();
-        //    }
-        //}
 
         public void RandomMove()
         {
