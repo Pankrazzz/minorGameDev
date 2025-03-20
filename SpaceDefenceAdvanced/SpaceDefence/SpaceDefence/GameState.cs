@@ -4,6 +4,7 @@ namespace SpaceDefence
     {
         StartScreen,
         Playing,
+        Paused,
         GameOver
     }
 }

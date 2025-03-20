@@ -12,6 +12,10 @@ namespace SpaceDefence
         private GameState _gameState;
         private SpriteFont _font;
         private bool _isGameOver;
+        private StartScreen _startScreen;
+        private GameOverScreen _gameOverScreen;
+        private PauseScreen _pauseScreen;
+        private Texture2D _mainMenuBackground;
 
         public SpaceDefence()
         {
@@ -38,13 +42,18 @@ namespace SpaceDefence
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _font = Content.Load<SpriteFont>("Text");
+            _mainMenuBackground = Content.Load<Texture2D>("MainMenu_background");
             _gameManager.Load(Content);
+
+            _startScreen = new StartScreen(_font, GraphicsDevice, _mainMenuBackground);
+            _gameOverScreen = new GameOverScreen(_font, GraphicsDevice);
+            _pauseScreen = new PauseScreen(_font, GraphicsDevice);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            //    Exit();
 
             MouseState mouseState = Mouse.GetState();
 
@@ -83,7 +92,43 @@ namespace SpaceDefence
                     }
                     break;
                 case GameState.Playing:
+                    if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+                    {
+                        _gameState = GameState.Paused;
+                    }
                     _gameManager.Update(gameTime);
+                    break;
+                case GameState.Paused:
+                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        string continueText = "Continue";
+                        string quitText = "Quit Game";
+
+                        Vector2 continueTextSize = _font.MeasureString(continueText);
+                        Vector2 quitTextSize = _font.MeasureString(quitText);
+
+                        Vector2 continueTextPosition = new Vector2(
+                            (GraphicsDevice.Viewport.Width - continueTextSize.X) / 2,
+                            (GraphicsDevice.Viewport.Height - continueTextSize.Y) / 2 - 20
+                        );
+
+                        Vector2 quitTextPosition = new Vector2(
+                            (GraphicsDevice.Viewport.Width - quitTextSize.X) / 2,
+                            (GraphicsDevice.Viewport.Height - quitTextSize.Y) / 2 + 20
+                        );
+
+                        Rectangle continueTextArea = new Rectangle(continueTextPosition.ToPoint(), continueTextSize.ToPoint());
+                        Rectangle quitTextArea = new Rectangle(quitTextPosition.ToPoint(), quitTextSize.ToPoint());
+
+                        if (IsMouseOver(continueTextArea))
+                        {
+                            _gameState = GameState.Playing;
+                        }
+                        else if (IsMouseOver(quitTextArea))
+                        {
+                            Exit();
+                        }
+                    }
                     break;
                 case GameState.GameOver:
                     if (mouseState.LeftButton == ButtonState.Pressed)
@@ -104,79 +149,27 @@ namespace SpaceDefence
             switch (_gameState)
             {
                 case GameState.StartScreen:
-                    DrawStartScreen();
+                    _startScreen.Draw(_spriteBatch);
                     break;
                 case GameState.Playing:
                     _gameManager.Draw(gameTime, _spriteBatch);
                     break;
+                case GameState.Paused:
+                    _gameManager.Draw(gameTime, _spriteBatch); // Draw the game in the background
+                    _pauseScreen.Draw(_spriteBatch);
+                    break;
                 case GameState.GameOver:
-                    DrawGameOverScreen();
+                    _gameOverScreen.Draw(_spriteBatch);
                     break;
             }
 
             base.Draw(gameTime);
         }
 
-        private void DrawStartScreen()
+        private bool IsMouseOver(Rectangle area)
         {
-            _spriteBatch.Begin();
-            string titleText = "Space Defence Advance DX Game of the Year Edition";
-            string startText = "Start Game";
-            string quitText = "Quit Game";
-
-            Vector2 titleTextSize = _font.MeasureString(titleText);
-            Vector2 startTextSize = _font.MeasureString(startText);
-            Vector2 quitTextSize = _font.MeasureString(quitText);
-
-            Vector2 titleTextPosition = new Vector2(
-                (GraphicsDevice.Viewport.Width - titleTextSize.X) / 2,
-                (GraphicsDevice.Viewport.Height - titleTextSize.Y) / 2 - 100
-            );
-
-            Vector2 startTextPosition = new Vector2(
-                (GraphicsDevice.Viewport.Width - startTextSize.X) / 2,
-                (GraphicsDevice.Viewport.Height - startTextSize.Y) / 2 - 20
-            );
-
-            Vector2 quitTextPosition = new Vector2(
-                (GraphicsDevice.Viewport.Width - quitTextSize.X) / 2,
-                (GraphicsDevice.Viewport.Height - quitTextSize.Y) / 2 + 20
-            );
-
-            Rectangle startTextArea = new Rectangle(startTextPosition.ToPoint(), startTextSize.ToPoint());
-            Rectangle quitTextArea = new Rectangle(quitTextPosition.ToPoint(), quitTextSize.ToPoint());
-
-            Color startTextColor = IsMouseOver(startTextArea) ? Color.Yellow : Color.White;
-            Color quitTextColor = IsMouseOver(quitTextArea) ? Color.Yellow : Color.White;
-
-            _spriteBatch.DrawString(_font, titleText, titleTextPosition, Color.White);
-            _spriteBatch.DrawString(_font, startText, startTextPosition, startTextColor);
-            _spriteBatch.DrawString(_font, quitText, quitTextPosition, quitTextColor);
-            _spriteBatch.End();
-        }
-
-        private void DrawGameOverScreen()
-        {
-            _spriteBatch.Begin();
-            string gameOverText = "Game Over";
-            string restartText = "Click to return to the Start Screen";
-
-            Vector2 gameOverTextSize = _font.MeasureString(gameOverText);
-            Vector2 restartTextSize = _font.MeasureString(restartText);
-
-            Vector2 gameOverTextPosition = new Vector2(
-                (GraphicsDevice.Viewport.Width - gameOverTextSize.X) / 2,
-                (GraphicsDevice.Viewport.Height - gameOverTextSize.Y) / 2 - 20
-            );
-
-            Vector2 restartTextPosition = new Vector2(
-                (GraphicsDevice.Viewport.Width - restartTextSize.X) / 2,
-                (GraphicsDevice.Viewport.Height - restartTextSize.Y) / 2 + 20
-            );
-
-            _spriteBatch.DrawString(_font, gameOverText, gameOverTextPosition, Color.Red);
-            _spriteBatch.DrawString(_font, restartText, restartTextPosition, Color.White);
-            _spriteBatch.End();
+            MouseState mouseState = Mouse.GetState();
+            return area.Contains(mouseState.X, mouseState.Y);
         }
 
         private void StartGame()
@@ -192,14 +185,9 @@ namespace SpaceDefence
             _gameManager.AddGameObject(player);
             _gameManager.AddGameObject(new Alien());
             _gameManager.AddGameObject(new Supply());
+            _gameManager.AddGameObject(new Asteroid());
 
             _gameState = GameState.Playing;
-        }
-
-        private bool IsMouseOver(Rectangle area)
-        {
-            MouseState mouseState = Mouse.GetState();
-            return area.Contains(mouseState.X, mouseState.Y);
         }
 
         public void SetGameOver()
@@ -209,4 +197,3 @@ namespace SpaceDefence
         }
     }
 }
-

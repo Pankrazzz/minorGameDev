@@ -152,14 +152,14 @@ namespace SpaceDefence
             // Draw the ship body with rotation
             spriteBatch.Draw(
                 ship_body,
-                _rectangleCollider.shape.Center.ToVector2(), // Position
-                null, // Source rectangle
-                Color.White, // Color
-                rotation, // Rotation angle
-                new Vector2(ship_body.Width / 2, ship_body.Height / 2), // Origin (center of the ship)
+                _rectangleCollider.shape.Center.ToVector2(),
+                null,
+                Color.White,
+                rotation,
+                new Vector2(ship_body.Width / 2, ship_body.Height / 2),
                 1f, // Scale
-                SpriteEffects.None, // Effects
-                0 // Layer depth
+                SpriteEffects.None,
+                0 
             );
 
             float aimAngle = LinePieceCollider.GetAngle(LinePieceCollider.GetDirection(GetPosition().Center, target));

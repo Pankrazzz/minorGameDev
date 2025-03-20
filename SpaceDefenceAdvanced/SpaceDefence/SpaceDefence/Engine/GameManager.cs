@@ -17,6 +17,8 @@ namespace SpaceDefence
         private List<GameObject> _toBeRemoved;
         private List<GameObject> _toBeAdded;
         private ContentManager _content;
+        private float _asteroidSpawnTimer;
+        private bool _isAsteroidSpawnScheduled;
 
         public Random RNG { get; private set; }
         public Ship Player { get; private set; }
@@ -108,6 +110,16 @@ namespace SpaceDefence
                 _gameObjects.Remove(gameObject);
             }
             _toBeRemoved.Clear();
+
+            if (_isAsteroidSpawnScheduled)
+            {
+                _asteroidSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (_asteroidSpawnTimer <= 0)
+                {
+                    AddGameObject(new Asteroid());
+                    _isAsteroidSpawnScheduled = false;
+                }
+            }
         }
 
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch) 
@@ -156,6 +168,11 @@ namespace SpaceDefence
             _gameObjects.Clear();
             _toBeRemoved.Clear();
             _toBeAdded.Clear();
+        }
+        public void ScheduleAsteroidSpawn()
+        {
+            _asteroidSpawnTimer = RNG.Next(5, 21);
+            _isAsteroidSpawnScheduled = true;
         }
     }
 }
