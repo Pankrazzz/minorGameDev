@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,18 +17,22 @@ namespace SpaceDefence
         private ContentManager _content;
         private float _asteroidSpawnTimer;
         private bool _isAsteroidSpawnScheduled;
+        private Rectangle _playArea;
 
         public Random RNG { get; private set; }
         public Ship Player { get; private set; }
         public InputManager InputManager { get; private set; }
         public Game Game { get; private set; }
+        public Rectangle PlayArea => _playArea;
+        public Camera Camera { get; private set; }
 
         public static GameManager GetGameManager()
         {
-            if(gameManager == null)
+            if (gameManager == null)
                 gameManager = new GameManager();
             return gameManager;
         }
+
         public GameManager()
         {
             _gameObjects = new List<GameObject>();
@@ -38,6 +40,7 @@ namespace SpaceDefence
             _toBeAdded = new List<GameObject>();
             InputManager = new InputManager();
             RNG = new Random();
+            _playArea = new Rectangle(0, 0, 3600, 1800); // Play area is 4 times bigger
         }
 
         public void Initialize(ContentManager content, Game game, Ship player)
@@ -45,6 +48,7 @@ namespace SpaceDefence
             Game = game;
             _content = content;
             Player = player;
+            Camera = new Camera(game.GraphicsDevice.Viewport, _playArea);
         }
 
         public void Load(ContentManager content)
@@ -65,7 +69,7 @@ namespace SpaceDefence
 
         public void CheckCollision()
         {
-            // Checks once for every pair of 2 GameObjects if the collide.
+            // Checks once for every pair of 2 GameObjects if they collide.
             for (int i = 0; i < _gameObjects.Count; i++)
             {
                 for (int j = i + 1; j < _gameObjects.Count; j++)
@@ -77,16 +81,14 @@ namespace SpaceDefence
                     }
                 }
             }
-
         }
-        
-        public void Update(GameTime gameTime) 
+
+        public void Update(GameTime gameTime)
         {
             InputManager.Update();
 
             // Handle input
             HandleInput(InputManager);
-
 
             // Update
             foreach (GameObject gameObject in _gameObjects)
@@ -94,7 +96,7 @@ namespace SpaceDefence
                 gameObject.Update(gameTime);
             }
 
-            // Check Collission
+            // Check Collision
             CheckCollision();
 
             foreach (GameObject gameObject in _toBeAdded)
@@ -111,6 +113,7 @@ namespace SpaceDefence
             }
             _toBeRemoved.Clear();
 
+            // Handle asteroid spawn timer
             if (_isAsteroidSpawnScheduled)
             {
                 _asteroidSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -122,14 +125,12 @@ namespace SpaceDefence
             }
         }
 
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch) 
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
             foreach (GameObject gameObject in _gameObjects)
             {
                 gameObject.Draw(gameTime, spriteBatch);
             }
-            spriteBatch.End();
         }
 
         /// <summary>
@@ -145,7 +146,7 @@ namespace SpaceDefence
 
         /// <summary>
         /// Remove GameObject from the GameManager. 
-        /// The GameObject will be removed at the start of the next Update step and its Destroy() mehtod will be called.
+        /// The GameObject will be removed at the start of the next Update step and its Destroy() method will be called.
         /// After that the object will no longer receive any updates.
         /// </summary>
         /// <param name="gameObject"> The GameObject to Remove. </param>
@@ -155,23 +156,25 @@ namespace SpaceDefence
         }
 
         /// <summary>
-        /// Get a random location on the screen.
+        /// Get a random location in the play area.
         /// </summary>
         public Vector2 RandomScreenLocation()
         {
             return new Vector2(
-                RNG.Next(0, Game.GraphicsDevice.Viewport.Width),
-                RNG.Next(0, Game.GraphicsDevice.Viewport.Height));
+                RNG.Next(_playArea.Left, _playArea.Right),
+                RNG.Next(_playArea.Top, _playArea.Bottom));
         }
+
         public void Reset()
         {
             _gameObjects.Clear();
             _toBeRemoved.Clear();
             _toBeAdded.Clear();
         }
+
         public void ScheduleAsteroidSpawn()
         {
-            _asteroidSpawnTimer = RNG.Next(5, 21);
+            _asteroidSpawnTimer = RNG.Next(5, 21); // Random time between 5 and 20 seconds
             _isAsteroidSpawnScheduled = true;
         }
     }

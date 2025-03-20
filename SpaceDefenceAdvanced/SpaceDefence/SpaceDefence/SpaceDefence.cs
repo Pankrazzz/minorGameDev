@@ -16,6 +16,7 @@ namespace SpaceDefence
         private GameOverScreen _gameOverScreen;
         private PauseScreen _pauseScreen;
         private Texture2D _mainMenuBackground;
+        private Camera _camera;
 
         public SpaceDefence()
         {
@@ -48,13 +49,11 @@ namespace SpaceDefence
             _startScreen = new StartScreen(_font, GraphicsDevice, _mainMenuBackground);
             _gameOverScreen = new GameOverScreen(_font, GraphicsDevice);
             _pauseScreen = new PauseScreen(_font, GraphicsDevice);
+            _camera = new Camera(GraphicsDevice.Viewport, _gameManager.PlayArea);
         }
 
         protected override void Update(GameTime gameTime)
         {
-            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            //    Exit();
-
             MouseState mouseState = Mouse.GetState();
 
             switch (_gameState)
@@ -97,6 +96,7 @@ namespace SpaceDefence
                         _gameState = GameState.Paused;
                     }
                     _gameManager.Update(gameTime);
+                    _camera.Follow(_gameManager.Player.GetPosition().Center.ToVector2());
                     break;
                 case GameState.Paused:
                     if (mouseState.LeftButton == ButtonState.Pressed)
@@ -152,10 +152,14 @@ namespace SpaceDefence
                     _startScreen.Draw(_spriteBatch);
                     break;
                 case GameState.Playing:
+                    _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
                     _gameManager.Draw(gameTime, _spriteBatch);
+                    _spriteBatch.End();
                     break;
                 case GameState.Paused:
+                    _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
                     _gameManager.Draw(gameTime, _spriteBatch); // Draw the game in the background
+                    _spriteBatch.End();
                     _pauseScreen.Draw(_spriteBatch);
                     break;
                 case GameState.GameOver:

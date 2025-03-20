@@ -1,9 +1,9 @@
 ﻿using System;
-using SpaceDefence.Collision;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SpaceDefence.Collision;
 
 namespace SpaceDefence
 {
@@ -129,22 +129,25 @@ namespace SpaceDefence
             if (buffTimer > 0)
                 buffTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            // Ensure the camera follows the ship
+            GameManager.GetGameManager().Camera.Follow(_rectangleCollider.shape.Center.ToVector2());
+
             base.Update(gameTime);
         }
 
         private void HandleScreenWrapping()
         {
-            Rectangle viewport = GameManager.GetGameManager().Game.GraphicsDevice.Viewport.Bounds;
+            Rectangle playArea = GameManager.GetGameManager().PlayArea;
 
-            if (_rectangleCollider.shape.Right < 0)
-                _rectangleCollider.shape.X = viewport.Width;
-            else if (_rectangleCollider.shape.Left > viewport.Width)
-                _rectangleCollider.shape.X = -_rectangleCollider.shape.Width;
+            if (_rectangleCollider.shape.Right < playArea.Left)
+                _rectangleCollider.shape.X = playArea.Right;
+            else if (_rectangleCollider.shape.Left > playArea.Right)
+                _rectangleCollider.shape.X = playArea.Left - _rectangleCollider.shape.Width;
 
-            if (_rectangleCollider.shape.Bottom < 0)
-                _rectangleCollider.shape.Y = viewport.Height;
-            else if (_rectangleCollider.shape.Top > viewport.Height)
-                _rectangleCollider.shape.Y = -_rectangleCollider.shape.Height;
+            if (_rectangleCollider.shape.Bottom < playArea.Top)
+                _rectangleCollider.shape.Y = playArea.Bottom;
+            else if (_rectangleCollider.shape.Top > playArea.Bottom)
+                _rectangleCollider.shape.Y = playArea.Top - _rectangleCollider.shape.Height;
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -159,7 +162,7 @@ namespace SpaceDefence
                 new Vector2(ship_body.Width / 2, ship_body.Height / 2),
                 1f, // Scale
                 SpriteEffects.None,
-                0 
+                0
             );
 
             float aimAngle = LinePieceCollider.GetAngle(LinePieceCollider.GetDirection(GetPosition().Center, target));
