@@ -15,7 +15,7 @@ namespace SpaceDefence
         private float buffTimer = 10;
         private float buffDuration = 10f;
         private RectangleCollider _rectangleCollider;
-        private Point target;
+        private Vector2 target;
 
         // Movement variables
         private Vector2 velocity;
@@ -53,7 +53,10 @@ namespace SpaceDefence
         public override void HandleInput(InputManager inputManager)
         {
             base.HandleInput(inputManager);
-            target = inputManager.CurrentMouseState.Position;
+            target = inputManager.CurrentMouseState.Position.ToVector2();
+
+            // Transform the mouse position to world coordinates
+            Vector2 transformedMousePosition = Vector2.Transform(target, Matrix.Invert(GameManager.GetGameManager().Camera.GetViewMatrix()));
 
             // Handle movement input
             acceleration = Vector2.Zero;
@@ -75,7 +78,7 @@ namespace SpaceDefence
 
             if (inputManager.LeftMousePress())
             {
-                Vector2 aimDirection = LinePieceCollider.GetDirection(GetPosition().Center, target);
+                Vector2 aimDirection = LinePieceCollider.GetDirection(_rectangleCollider.shape.Center.ToVector2(), transformedMousePosition);
                 Vector2 turretExit = _rectangleCollider.shape.Center.ToVector2() + aimDirection * base_turret.Height / 2f;
                 int screenWidth = GameManager.GetGameManager().Game.GraphicsDevice.Viewport.Width;
                 if (buffTimer <= 0)
@@ -84,7 +87,7 @@ namespace SpaceDefence
                 }
                 else
                 {
-                    GameManager.GetGameManager().AddGameObject(new Laser(new LinePieceCollider(turretExit, target.ToVector2()), screenWidth));
+                    GameManager.GetGameManager().AddGameObject(new Laser(new LinePieceCollider(turretExit, transformedMousePosition), screenWidth));
                 }
             }
         }
@@ -165,7 +168,7 @@ namespace SpaceDefence
                 0
             );
 
-            float aimAngle = LinePieceCollider.GetAngle(LinePieceCollider.GetDirection(GetPosition().Center, target));
+            float aimAngle = LinePieceCollider.GetAngle(LinePieceCollider.GetDirection(_rectangleCollider.shape.Center.ToVector2(), target));
             if (buffTimer <= 0)
             {
                 Rectangle turretLocation = base_turret.Bounds;
