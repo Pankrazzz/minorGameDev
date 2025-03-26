@@ -55,17 +55,6 @@ namespace SpaceDefence
             _circleCollider.Center += direction * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
-        //private void CheckGameOver()
-        //{
-        //    GameManager gm = GameManager.GetGameManager();
-        //    Vector2 centerOfPlayer = gm.Player.GetPosition().Center.ToVector2();
-        //    if ((_circleCollider.Center - centerOfPlayer).Length() < playerClearance)
-        //    {
-        //        // Game over logic here
-        //        gm.Game.Exit();
-        //    }
-        //}
-
         public void RandomMove()
         {
             GameManager gm = GameManager.GetGameManager();

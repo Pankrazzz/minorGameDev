@@ -66,12 +66,14 @@ namespace SpaceDefence
             if (inputManager.IsKeyDown(Keys.D))
                 acceleration.X += 1;
 
+            //// Ai has helped me with this part, to make sure the ship moves correctly.
             // Normalize the acceleration vector to ensure smooth 360-degree movement
             if (acceleration != Vector2.Zero)
             {
                 acceleration.Normalize();
                 acceleration *= accelerationSpeed;
             }
+            ////
 
             if (inputManager.LeftMousePress())
             {
@@ -96,17 +98,16 @@ namespace SpaceDefence
             // Update velocity based on acceleration
             velocity += acceleration * deltaTime;
 
-            // Limit speed to maxSpeed
             if (velocity.Length() > maxSpeed)
             {
                 velocity.Normalize();
                 velocity *= maxSpeed;
             }
 
-            // Apply gradual deceleration when no acceleration is being applied
+            // Apply deceleration ,when no acceleration is being applied
             if (acceleration == Vector2.Zero)
             {
-                velocity *= (float)Math.Pow(decelerationFactor, deltaTime); // Gradually reduce velocity
+                velocity *= (float)Math.Pow(decelerationFactor, deltaTime);
             }
 
             // Update position based on velocity
@@ -118,11 +119,10 @@ namespace SpaceDefence
                 rotation = (float)Math.Atan2(velocity.Y, velocity.X) + MathHelper.PiOver2;
             }
 
-            // Update collider position and rotation
+            // Update collider
             _rectangleCollider.shape.Location = _rectangleCollider.shape.Center + velocity.ToPoint();
             _rectangleCollider.shape.Location -= new Point(ship_body.Width / 2, ship_body.Height / 2);
 
-            // Handle screen wrapping
             HandleScreenWrapping();
 
             // Update the Buff timer
@@ -149,6 +149,7 @@ namespace SpaceDefence
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            //// Ai has helped me with this part, to make sure the ship rotates correctly.
             // Draw the ship body with rotation
             spriteBatch.Draw(
                 ship_body,
@@ -161,6 +162,7 @@ namespace SpaceDefence
                 SpriteEffects.None, // Effects
                 0 // Layer depth
             );
+            ////
 
             float aimAngle = LinePieceCollider.GetAngle(LinePieceCollider.GetDirection(GetPosition().Center, target));
             if (buffTimer <= 0)
