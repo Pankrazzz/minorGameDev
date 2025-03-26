@@ -12,10 +12,12 @@ namespace SpaceDefence
         private Texture2D ship_body;
         private Texture2D base_turret;
         private Texture2D laser_turret;
+        private Texture2D ship_body_bomba;
         private float buffTimer = 10;
         private float buffDuration = 10f;
         private RectangleCollider _rectangleCollider;
         private Vector2 target;
+        private bool hasBombPowerUp = false;
 
         // Movement variables
         private Vector2 velocity;
@@ -45,6 +47,7 @@ namespace SpaceDefence
             ship_body = content.Load<Texture2D>("ship_body");
             base_turret = content.Load<Texture2D>("base_turret");
             laser_turret = content.Load<Texture2D>("laser_turret");
+            ship_body_bomba = content.Load<Texture2D>("ship_body_bomba");
             _rectangleCollider.shape.Size = ship_body.Bounds.Size;
             _rectangleCollider.shape.Location -= new Point(ship_body.Width / 2, ship_body.Height / 2);
             base.Load(content);
@@ -90,6 +93,11 @@ namespace SpaceDefence
                     GameManager.GetGameManager().AddGameObject(new Laser(new LinePieceCollider(turretExit, transformedMousePosition), screenWidth));
                 }
             }
+
+            if (inputManager.IsKeyDown(Keys.Space) && hasBombPowerUp)
+            {
+                DropBomb();
+            }
         }
 
         public override void Update(GameTime gameTime)
@@ -99,17 +107,16 @@ namespace SpaceDefence
             // Update velocity based on acceleration
             velocity += acceleration * deltaTime;
 
-            // Limit speed to maxSpeed
             if (velocity.Length() > maxSpeed)
             {
                 velocity.Normalize();
                 velocity *= maxSpeed;
             }
 
-            // Apply gradual deceleration when no acceleration is being applied
+            // Apply deceleration when no acceleration is being applied
             if (acceleration == Vector2.Zero)
             {
-                velocity *= (float)Math.Pow(decelerationFactor, deltaTime); // Gradually reduce velocity
+                velocity *= (float)Math.Pow(decelerationFactor, deltaTime);
             }
 
             // Update position based on velocity
@@ -121,11 +128,10 @@ namespace SpaceDefence
                 rotation = (float)Math.Atan2(velocity.Y, velocity.X) + MathHelper.PiOver2;
             }
 
-            // Update collider position and rotation
+            // Update collider
             _rectangleCollider.shape.Location = _rectangleCollider.shape.Center + velocity.ToPoint();
             _rectangleCollider.shape.Location -= new Point(ship_body.Width / 2, ship_body.Height / 2);
 
-            // Handle screen wrapping
             HandleScreenWrapping();
 
             // Update the Buff timer
@@ -153,16 +159,28 @@ namespace SpaceDefence
                 _rectangleCollider.shape.Y = playArea.Top - _rectangleCollider.shape.Height;
         }
 
+        public override void OnCollision(GameObject other)
+        {
+            if (other is Bomb)
+            {
+                GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_rectangleCollider.shape.Center.ToVector2(), ExplosionType.Ship));
+                ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
+            }
+            base.OnCollision(other);
+        }
+
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             // Draw the ship body with rotation
+            Texture2D currentBody = hasBombPowerUp ? ship_body_bomba : ship_body;
             spriteBatch.Draw(
-                ship_body,
+                currentBody,
                 _rectangleCollider.shape.Center.ToVector2(),
                 null,
                 Color.White,
                 rotation,
-                new Vector2(ship_body.Width / 2, ship_body.Height / 2),
+                new Vector2(currentBody.Width / 2, currentBody.Height / 2),
                 1f, // Scale
                 SpriteEffects.None,
                 0
@@ -192,6 +210,17 @@ namespace SpaceDefence
         public Rectangle GetPosition()
         {
             return _rectangleCollider.shape;
+        }
+
+        public void GainBombPowerUp()
+        {
+            hasBombPowerUp = true;
+        }
+
+        private void DropBomb()
+        {
+            GameManager.GetGameManager().AddGameObject(new Bomb(_rectangleCollider.shape.Center.ToVector2()));
+            hasBombPowerUp = false;
         }
     }
 }

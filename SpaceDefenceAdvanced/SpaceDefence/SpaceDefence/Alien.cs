@@ -30,7 +30,6 @@ namespace SpaceDefence
         {
             base.Update(gameTime);
             MoveTowardsPlayer(gameTime);
-            // CheckGameOver();
         }
 
         public override void OnCollision(GameObject other)
@@ -38,11 +37,21 @@ namespace SpaceDefence
             if (other is Bullet || other is Laser)
             {
                 GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Alien));
                 GameManager.GetGameManager().AddGameObject(new Alien(speed / baseSpeed + 0.1f));
-            } else if (other is Ship)
+            }
+            else if (other is Ship)
             {
-                //Game over
+                GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().RemoveGameObject(other);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Alien));
+                GameManager.GetGameManager().AddGameObject(new Explosion(((Ship)other).GetPosition().Center.ToVector2(), ExplosionType.Ship));
                 ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
+            }
+            else if (other is Bomb)
+            {
+                GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Alien));
             }
             base.OnCollision(other);
         }

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace SpaceDefence
 {
-    internal class Asteroid : GameObject
+    public class Asteroid : GameObject
     {
         private CircleCollider _circleCollider;
         private Texture2D _texture;
@@ -12,7 +12,7 @@ namespace SpaceDefence
 
         public Asteroid()
         {
-            _scale = 2.0f; // Set the scale factor to make the asteroid bigger
+            _scale = 2.0f;
         }
 
         public override void Load(ContentManager content)
@@ -26,19 +26,30 @@ namespace SpaceDefence
 
         public override void OnCollision(GameObject other)
         {
-            if (other is Bullet || other is Laser)
+            if (other is Bullet)
             {
                 GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().RemoveGameObject(other);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid, _scale));
                 GameManager.GetGameManager().ScheduleAsteroidSpawn();
             }
-            else if (other is Ship || other is Alien)
+            else if (other is Laser)
+            {
+                GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid, _scale));
+                GameManager.GetGameManager().ScheduleAsteroidSpawn();
+            }
+            else if (other is Bomb)
+            {
+                GameManager.GetGameManager().RemoveGameObject(this);
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid));
+            }
+            else if (other is Ship)
             {
                 GameManager.GetGameManager().RemoveGameObject(other);
                 GameManager.GetGameManager().RemoveGameObject(this);
-                if (other is Ship)
-                {
-                    ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
-                }
+                GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid, _scale));
+                ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
                 GameManager.GetGameManager().ScheduleAsteroidSpawn();
             }
             base.OnCollision(other);
@@ -67,4 +78,3 @@ namespace SpaceDefence
         }
     }
 }
-

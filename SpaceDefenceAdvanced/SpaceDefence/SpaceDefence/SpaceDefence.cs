@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace SpaceDefence
 {
@@ -11,6 +12,7 @@ namespace SpaceDefence
         private GameManager _gameManager;
         private GameState _gameState;
         private SpriteFont _font;
+        private SpriteFont _smallTextFont;
         private bool _isGameOver;
         private StartScreen _startScreen;
         private GameOverScreen _gameOverScreen;
@@ -43,6 +45,7 @@ namespace SpaceDefence
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _font = Content.Load<SpriteFont>("Text");
+            _smallTextFont = Content.Load<SpriteFont>("smallText");
             _mainMenuBackground = Content.Load<Texture2D>("MainMenu_background");
             _gameManager.Load(Content);
 
@@ -155,6 +158,11 @@ namespace SpaceDefence
                     _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
                     _gameManager.Draw(gameTime, _spriteBatch);
                     _spriteBatch.End();
+
+                    // Draw the timer
+                    _spriteBatch.Begin();
+                    DrawTimer(gameTime);
+                    _spriteBatch.End();
                     break;
                 case GameState.Paused:
                     _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
@@ -198,6 +206,21 @@ namespace SpaceDefence
         {
             _gameState = GameState.GameOver;
             _isGameOver = true;
+        }
+
+        private void DrawTimer(GameTime gameTime)
+        {
+            string timerText = FormatElapsedTime(_gameManager.ElapsedTime);
+            Vector2 timerPosition = new Vector2(GraphicsDevice.Viewport.Width - 10, 10);
+            Vector2 timerSize = _smallTextFont.MeasureString(timerText);
+            timerPosition.X -= timerSize.X; // Align timer to the right
+            _spriteBatch.DrawString(_smallTextFont, timerText, timerPosition, Color.White);
+        }
+
+        private string FormatElapsedTime(float elapsedTime)
+        {
+            TimeSpan timeSpan = TimeSpan.FromSeconds(elapsedTime);
+            return string.Format("{0:D2}:{1:D2}", timeSpan.Minutes, timeSpan.Seconds);
         }
     }
 }

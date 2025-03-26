@@ -132,7 +132,6 @@ namespace SpaceDefence
         {
             Rectangle rect = other.shape;
 
-            // Check if either end of the line is inside the rectangle
             if (rect.Contains(Start) || rect.Contains(End))
             {
                 return true;
@@ -185,10 +184,10 @@ namespace SpaceDefence
         {
             Vector2 lineDirection = End - Start;
             float lineLengthSquared = lineDirection.LengthSquared();
-            if (lineLengthSquared == 0) return Start; // The line is actually a point
+            if (lineLengthSquared == 0) return Start;
 
             float t = Vector2.Dot(other - Start, lineDirection) / lineLengthSquared;
-            t = MathHelper.Clamp(t, 0, 1); // Clamp t to the range [0, 1] to stay within the segment
+            t = MathHelper.Clamp(t, 0, 1);
             return Start + t * lineDirection;
 
             // TODO Implement

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,9 +16,12 @@ namespace SpaceDefence
         private List<GameObject> _toBeRemoved;
         private List<GameObject> _toBeAdded;
         private ContentManager _content;
-        private float _asteroidSpawnTimer;
-        private bool _isAsteroidSpawnScheduled;
+        private float _asteroidRespawnTimer;
+        private List<float> _alienSpawnTimes;
+        private float _elapsedTime;
+        private int _nextAlienIndex;
         private Rectangle _playArea;
+        private float _bombPowerUpSpawnTimer;
 
         public Random RNG { get; private set; }
         public Ship Player { get; private set; }
@@ -25,6 +29,7 @@ namespace SpaceDefence
         public Game Game { get; private set; }
         public Rectangle PlayArea => _playArea;
         public Camera Camera { get; private set; }
+        public float ElapsedTime => _elapsedTime;
 
         public static GameManager GetGameManager()
         {
@@ -38,9 +43,14 @@ namespace SpaceDefence
             _gameObjects = new List<GameObject>();
             _toBeRemoved = new List<GameObject>();
             _toBeAdded = new List<GameObject>();
+            _asteroidRespawnTimer = 0;
+            _alienSpawnTimes = new List<float> { 60, 180, 300, 600 }; // Spawn times in seconds
+            _elapsedTime = 0;
+            _nextAlienIndex = 0;
+            _bombPowerUpSpawnTimer = 5f;
             InputManager = new InputManager();
             RNG = new Random();
-            _playArea = new Rectangle(0, 0, 3600, 1800); // Play area is 4 times bigger
+            _playArea = new Rectangle(0, 0, 3600, 1800);
         }
 
         public void Initialize(ContentManager content, Game game, Ship player)
@@ -49,6 +59,10 @@ namespace SpaceDefence
             _content = content;
             Player = player;
             Camera = new Camera(game.GraphicsDevice.Viewport, _playArea);
+
+            var asteroid = new Asteroid();
+            AddGameObject(asteroid);
+            _asteroidRespawnTimer = 0; // No respawn timer at start
         }
 
         public void Load(ContentManager content)
@@ -113,15 +127,32 @@ namespace SpaceDefence
             }
             _toBeRemoved.Clear();
 
-            // Handle asteroid spawn timer
-            if (_isAsteroidSpawnScheduled)
+            // Handle asteroid respawn timer
+            if (_asteroidRespawnTimer > 0)
             {
-                _asteroidSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (_asteroidSpawnTimer <= 0)
+                _asteroidRespawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (_asteroidRespawnTimer <= 0)
                 {
-                    AddGameObject(new Asteroid());
-                    _isAsteroidSpawnScheduled = false;
+                    var newAsteroid = new Asteroid();
+                    AddGameObject(newAsteroid);
                 }
+            }
+
+            // Update elapsed time
+            _elapsedTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            // Spawn new aliens based on elapsed time
+            if (_nextAlienIndex < _alienSpawnTimes.Count && _elapsedTime >= _alienSpawnTimes[_nextAlienIndex])
+            {
+                AddGameObject(new Alien());
+                _nextAlienIndex++;
+            }
+
+            _bombPowerUpSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (_bombPowerUpSpawnTimer <= 0)
+            {
+                ScheduleBombPowerUpSpawn();
+                _bombPowerUpSpawnTimer = 30f; // Reset timer for next spawn
             }
         }
 
@@ -170,12 +201,33 @@ namespace SpaceDefence
             _gameObjects.Clear();
             _toBeRemoved.Clear();
             _toBeAdded.Clear();
+            _asteroidRespawnTimer = 0;
+            _elapsedTime = 0;
+            _nextAlienIndex = 0;
         }
 
         public void ScheduleAsteroidSpawn()
         {
-            _asteroidSpawnTimer = RNG.Next(5, 21); // Random time between 5 and 20 seconds
-            _isAsteroidSpawnScheduled = true;
+            _asteroidRespawnTimer = RNG.Next(5, 21); // Random time between 5 and 20 seconds
         }
+
+        public void ScheduleBombPowerUpSpawn()
+        {
+            if (!IsBombPowerUpActive())
+            {
+                AddGameObject(new Supply(true));
+            }
+        }
+
+        public bool IsBombPowerUpActive()
+        {
+            return GetGameObjects().Any(go => go is Supply supply && supply.isBombPowerUp);
+        }
+
+        public List<GameObject> GetGameObjects()
+        {
+            return _gameObjects;
+        }
+
     }
 }
