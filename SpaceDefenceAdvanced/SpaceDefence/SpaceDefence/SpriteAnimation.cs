@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace SpaceDefence
@@ -14,6 +15,8 @@ namespace SpaceDefence
         private float _elapsedTime;
         private bool _isLooping;
 
+        public string TextureName { get; set; }
+
         public bool IsFinished => !_isLooping && _currentFrame >= _frameCount;
 
         public SpriteAnimation(Texture2D spriteSheet, int frameWidth, int frameHeight, int frameCount, float frameTime, bool isLooping)
@@ -26,6 +29,11 @@ namespace SpaceDefence
             _isLooping = isLooping;
             _currentFrame = 0;
             _elapsedTime = 0f;
+        }
+
+        public void Load(ContentManager content)
+        {
+            _spriteSheet = content.Load<Texture2D>(TextureName);
         }
 
         public void Update(GameTime gameTime)

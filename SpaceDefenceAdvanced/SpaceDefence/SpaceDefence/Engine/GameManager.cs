@@ -65,6 +65,9 @@ namespace SpaceDefence
             AddGameObject(asteroid);
             // No respawn timer at start
             _asteroidRespawnTimer = 0;
+
+            AddGameObject(new Planet(new Vector2(150, 200), "Alien planet", 96, 96, 77, 0.05f, true, 3.0f));
+            AddGameObject(new Planet(new Vector2(_playArea.Width - 300, _playArea.Height - 200), "Earth-Like planet", 96, 96, 77, 0.1f, true, 2.0f));
         }
 
         public void Load(ContentManager content)

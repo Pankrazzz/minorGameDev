@@ -18,6 +18,7 @@ namespace SpaceDefence
         private GameOverScreen _gameOverScreen;
         private PauseScreen _pauseScreen;
         private Texture2D _mainMenuBackground;
+        private Texture2D _playAreaBackground;
         private Camera _camera;
 
         public SpaceDefence()
@@ -47,6 +48,7 @@ namespace SpaceDefence
             _font = Content.Load<SpriteFont>("Text");
             _smallTextFont = Content.Load<SpriteFont>("smallText");
             _mainMenuBackground = Content.Load<Texture2D>("MainMenu_background");
+            _playAreaBackground = Content.Load<Texture2D>("stars_texture");
             _gameManager.Load(Content);
 
             _startScreen = new StartScreen(_font, GraphicsDevice, _mainMenuBackground);
@@ -156,6 +158,7 @@ namespace SpaceDefence
                     break;
                 case GameState.Playing:
                     _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
+                    DrawBackground();
                     _gameManager.Draw(gameTime, _spriteBatch);
                     _spriteBatch.End();
 
@@ -166,7 +169,8 @@ namespace SpaceDefence
                     break;
                 case GameState.Paused:
                     _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
-                    _gameManager.Draw(gameTime, _spriteBatch); // Draw the game in the background
+                    DrawBackground();
+                    _gameManager.Draw(gameTime, _spriteBatch);
                     _spriteBatch.End();
                     _pauseScreen.Draw(_spriteBatch);
                     break;
@@ -221,6 +225,20 @@ namespace SpaceDefence
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(elapsedTime);
             return string.Format("{0:D2}:{1:D2}", timeSpan.Minutes, timeSpan.Seconds);
+        }
+
+        private void DrawBackground()
+        {
+            int textureWidth = _playAreaBackground.Width;
+            int textureHeight = _playAreaBackground.Height;
+
+            for (int x = 0; x < _gameManager.PlayArea.Width; x += textureWidth)
+            {
+                for (int y = 0; y < _gameManager.PlayArea.Height; y += textureHeight)
+                {
+                    _spriteBatch.Draw(_playAreaBackground, new Rectangle(x, y, textureWidth, textureHeight), Color.White);
+                }
+            }
         }
     }
 }
