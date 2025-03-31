@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using SpaceDefence.Collision;
 
 namespace SpaceDefence
 {
-    internal class Alien : GameObject
+    internal class Alien : GameObject, ICollidable
     {
         private CircleCollider _circleCollider;
         private Texture2D _texture;
@@ -48,10 +49,12 @@ namespace SpaceDefence
                 GameManager.GetGameManager().AddGameObject(new Explosion(((Ship)other).GetPosition().Center.ToVector2(), ExplosionType.Ship));
                 ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
             }
-            else if (other is Bomb)
+            else if (other is Bomb bomb)
             {
                 GameManager.GetGameManager().RemoveGameObject(this);
                 GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Alien));
+                bomb.Explode();
+                GameManager.GetGameManager().RemoveGameObject(bomb);
             }
             base.OnCollision(other);
         }
@@ -79,5 +82,8 @@ namespace SpaceDefence
             spriteBatch.Draw(_texture, _circleCollider.GetBoundingBox(), Color.White);
             base.Draw(gameTime, spriteBatch);
         }
+
+        public Collider GetCollider() => _circleCollider;
+
     }
 }

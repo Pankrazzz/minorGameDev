@@ -17,7 +17,6 @@ namespace SpaceDefence
         }
         public Laser(LinePieceCollider linePiece, float length) : this(linePiece)
         {
-            // Sets the length of the laser to be equal to the width of the screen, so it will always cover the full screen.
             this.linePiece.Length = length;
         }
 

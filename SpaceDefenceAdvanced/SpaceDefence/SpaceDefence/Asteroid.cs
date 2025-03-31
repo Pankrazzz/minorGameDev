@@ -1,10 +1,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using SpaceDefence.Collision;
 
 namespace SpaceDefence
 {
-    public class Asteroid : GameObject
+    public class Asteroid : GameObject, ICollidable
     {
         private CircleCollider _circleCollider;
         private Texture2D _texture;
@@ -76,5 +77,7 @@ namespace SpaceDefence
             );
             base.Draw(gameTime, spriteBatch);
         }
+
+        public Collider GetCollider() => _circleCollider;
     }
 }

@@ -45,7 +45,8 @@ namespace SpaceDefence
         /// </summary>
         /// <param name="other"> The GameObject to check collision with. </param>
         /// <returns></returns>
-        public bool CheckCollision(GameObject other)
+        // Made virtual so that it can be overridden in child classes.
+        public virtual bool CheckCollision(GameObject other)
         {
             if (collider == null)
                 return false;

@@ -37,17 +37,17 @@ namespace SpaceDefence
                 case ExplosionType.Asteroid:
                     // explosionTexture = content.Load<Texture2D>("Asteroid 01 - Explode"); // Had trouble to make this one look nice, sorry
                     explosionTexture = content.Load<Texture2D>("Explosion");
-                    frameCount = 16; // 16 frames (Can change depending on explosion type)
+                    frameCount = 16;
                     frameTime = 0.05f;
                     break;
                 case ExplosionType.Alien:
                     explosionTexture = content.Load<Texture2D>("Explosion");
-                    frameCount = 16; // 16 frames (Can change depending on explosion type)
+                    frameCount = 16;
                     frameTime = 0.05f;
                     break;
                 case ExplosionType.Ship:
                     explosionTexture = content.Load<Texture2D>("Explosion");
-                    frameCount = 16; // 16 frames (Can change depending on explosion type)
+                    frameCount = 16;
                     frameTime = 0.05f;
                     break;
                 default:

@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+// using Microsoft.Xna.Framework.Input;
 
 namespace SpaceDefence
 {
@@ -22,6 +22,7 @@ namespace SpaceDefence
         private int _nextAlienIndex;
         private Rectangle _playArea;
         private float _bombPowerUpSpawnTimer;
+        private float _powerUpSpawnTimer = 20f;
 
         public Random RNG { get; private set; }
         public Ship Player { get; private set; }
@@ -44,7 +45,7 @@ namespace SpaceDefence
             _toBeRemoved = new List<GameObject>();
             _toBeAdded = new List<GameObject>();
             _asteroidRespawnTimer = 0;
-            _alienSpawnTimes = new List<float> { 60, 180, 300, 600 }; // Spawn times in seconds
+            _alienSpawnTimes = new List<float> { 60, 180, 300, 600 };
             _elapsedTime = 0;
             _nextAlienIndex = 0;
             _bombPowerUpSpawnTimer = 5f;
@@ -62,7 +63,8 @@ namespace SpaceDefence
 
             var asteroid = new Asteroid();
             AddGameObject(asteroid);
-            _asteroidRespawnTimer = 0; // No respawn timer at start
+            // No respawn timer at start
+            _asteroidRespawnTimer = 0;
         }
 
         public void Load(ContentManager content)
@@ -83,7 +85,6 @@ namespace SpaceDefence
 
         public void CheckCollision()
         {
-            // Checks once for every pair of 2 GameObjects if they collide.
             for (int i = 0; i < _gameObjects.Count; i++)
             {
                 for (int j = i + 1; j < _gameObjects.Count; j++)
@@ -110,7 +111,6 @@ namespace SpaceDefence
                 gameObject.Update(gameTime);
             }
 
-            // Check Collision
             CheckCollision();
 
             foreach (GameObject gameObject in _toBeAdded)
@@ -127,7 +127,6 @@ namespace SpaceDefence
             }
             _toBeRemoved.Clear();
 
-            // Handle asteroid respawn timer
             if (_asteroidRespawnTimer > 0)
             {
                 _asteroidRespawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -138,21 +137,27 @@ namespace SpaceDefence
                 }
             }
 
-            // Update elapsed time
             _elapsedTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            // Spawn new aliens based on elapsed time
             if (_nextAlienIndex < _alienSpawnTimes.Count && _elapsedTime >= _alienSpawnTimes[_nextAlienIndex])
             {
                 AddGameObject(new Alien());
                 _nextAlienIndex++;
             }
 
+            _powerUpSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (_powerUpSpawnTimer <= 0)
+            {
+                AddGameObject(new Supply(false));
+                _powerUpSpawnTimer = 30f;
+                // System.Diagnostics.Debug.WriteLine("Spawned laser crate");
+            }
+
             _bombPowerUpSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (_bombPowerUpSpawnTimer <= 0)
             {
                 ScheduleBombPowerUpSpawn();
-                _bombPowerUpSpawnTimer = 30f; // Reset timer for next spawn
+                _bombPowerUpSpawnTimer = 30f;
             }
         }
 
@@ -208,12 +213,12 @@ namespace SpaceDefence
 
         public void ScheduleAsteroidSpawn()
         {
-            _asteroidRespawnTimer = RNG.Next(5, 21); // Random time between 5 and 20 seconds
+            _asteroidRespawnTimer = RNG.Next(5, 21);
         }
 
         public void ScheduleBombPowerUpSpawn()
         {
-            if (!IsBombPowerUpActive())
+            if (!Player.HasBombPowerUp && !IsBombPowerUpActive())
             {
                 AddGameObject(new Supply(true));
             }

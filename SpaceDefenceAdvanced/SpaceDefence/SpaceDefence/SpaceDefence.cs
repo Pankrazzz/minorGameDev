@@ -213,7 +213,7 @@ namespace SpaceDefence
             string timerText = FormatElapsedTime(_gameManager.ElapsedTime);
             Vector2 timerPosition = new Vector2(GraphicsDevice.Viewport.Width - 10, 10);
             Vector2 timerSize = _smallTextFont.MeasureString(timerText);
-            timerPosition.X -= timerSize.X; // Align timer to the right
+            timerPosition.X -= timerSize.X;
             _spriteBatch.DrawString(_smallTextFont, timerText, timerPosition, Color.White);
         }
 

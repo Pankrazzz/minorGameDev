@@ -27,12 +27,14 @@ namespace SpaceDefence
             RandomMove();
         }
 
-        public override void OnCollision(GameObject other)
-        {
+         public override void OnCollision(GameObject other)
+         {
             if (other is Ship ship)
             {
+                // System.Diagnostics.Debug.WriteLine($"Collision with ship. Current ship instance: {ship.GetHashCode()}");
                 if (isBombPowerUp)
                 {
+                    System.Diagnostics.Debug.WriteLine("Granting bomb powerup");
                     ship.GainBombPowerUp();
                 }
                 else
@@ -41,8 +43,7 @@ namespace SpaceDefence
                 }
                 GameManager.GetGameManager().RemoveGameObject(this);
             }
-            base.OnCollision(other);
-        }
+         }
 
         public void RandomMove()
         {
