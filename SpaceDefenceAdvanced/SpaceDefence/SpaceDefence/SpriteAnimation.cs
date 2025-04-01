@@ -19,6 +19,9 @@ namespace SpaceDefence
 
         public bool IsFinished => !_isLooping && _currentFrame >= _frameCount;
 
+        public int FrameWidth => _frameWidth;
+        public int FrameHeight => _frameHeight;
+
         public SpriteAnimation(Texture2D spriteSheet, int frameWidth, int frameHeight, int frameCount, float frameTime, bool isLooping)
         {
             _spriteSheet = spriteSheet;

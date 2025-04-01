@@ -162,9 +162,11 @@ namespace SpaceDefence
                     _gameManager.Draw(gameTime, _spriteBatch);
                     _spriteBatch.End();
 
-                    // Draw the timer
+                    // Draw the timer, score, and objective
                     _spriteBatch.Begin();
                     DrawTimer(gameTime);
+                    DrawScore();
+                    DrawObjective();
                     _spriteBatch.End();
                     break;
                 case GameState.Paused:
@@ -219,6 +221,28 @@ namespace SpaceDefence
             Vector2 timerSize = _smallTextFont.MeasureString(timerText);
             timerPosition.X -= timerSize.X;
             _spriteBatch.DrawString(_smallTextFont, timerText, timerPosition, Color.White);
+        }
+
+        private void DrawScore()
+        {
+            string scoreText = $"Score: {_gameManager.Score}";
+            Vector2 scorePosition = new Vector2(GraphicsDevice.Viewport.Width - 10, 30);
+            Vector2 scoreSize = _smallTextFont.MeasureString(scoreText);
+            scorePosition.X -= scoreSize.X;
+            _spriteBatch.DrawString(_smallTextFont, scoreText, scorePosition, Color.White);
+        }
+
+        private void DrawObjective()
+        {
+            string objectiveText = $"Objective: {_gameManager.CurrentObjective.Description}";
+            Vector2 objectivePosition = new Vector2(10, 10);
+            _spriteBatch.DrawString(_smallTextFont, objectiveText, objectivePosition, Color.White);
+
+            if (_gameManager.CurrentObjective is CollectCargoObjective collectCargoObjective && collectCargoObjective._cargoCollected)
+            {
+                Vector2 position = new Vector2(10, 50);
+                _spriteBatch.Draw(collectCargoObjective.CargoIndicator, position, Color.White);
+            }
         }
 
         private string FormatElapsedTime(float elapsedTime)

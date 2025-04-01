@@ -29,6 +29,7 @@ namespace SpaceDefence
         {
             if (other is Bullet)
             {
+                GameManager.GetGameManager().AsteroidDestroyed();
                 GameManager.GetGameManager().RemoveGameObject(this);
                 GameManager.GetGameManager().RemoveGameObject(other);
                 GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid, _scale));
@@ -36,6 +37,7 @@ namespace SpaceDefence
             }
             else if (other is Laser)
             {
+                GameManager.GetGameManager().AsteroidDestroyed();
                 GameManager.GetGameManager().RemoveGameObject(this);
                 GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid, _scale));
                 GameManager.GetGameManager().ScheduleAsteroidSpawn();

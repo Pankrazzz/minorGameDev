@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-// using Microsoft.Xna.Framework.Input;
 
 namespace SpaceDefence
 {
@@ -23,6 +22,8 @@ namespace SpaceDefence
         private Rectangle _playArea;
         private float _bombPowerUpSpawnTimer;
         private float _powerUpSpawnTimer = 20f;
+        private Objective _currentObjective;
+        private int _score;
 
         public Random RNG { get; private set; }
         public Ship Player { get; private set; }
@@ -31,6 +32,8 @@ namespace SpaceDefence
         public Rectangle PlayArea => _playArea;
         public Camera Camera { get; private set; }
         public float ElapsedTime => _elapsedTime;
+        public int Score => _score;
+        public Objective CurrentObjective => _currentObjective;
 
         public static GameManager GetGameManager()
         {
@@ -52,6 +55,7 @@ namespace SpaceDefence
             InputManager = new InputManager();
             RNG = new Random();
             _playArea = new Rectangle(0, 0, 3600, 1800);
+            _score = 0;
         }
 
         public void Initialize(ContentManager content, Game game, Ship player)
@@ -66,8 +70,15 @@ namespace SpaceDefence
             // No respawn timer at start
             _asteroidRespawnTimer = 0;
 
-            AddGameObject(new Planet(new Vector2(150, 200), "Alien planet", 96, 96, 77, 0.05f, true, 3.0f));
-            AddGameObject(new Planet(new Vector2(_playArea.Width - 300, _playArea.Height - 200), "Earth-Like planet", 96, 96, 77, 0.1f, true, 2.0f));
+            var alienPlanet = new Planet(new Vector2(150, 200), "Alien planet", 96, 96, 77, 0.05f, true, 3.0f, "Alien Planet");
+            var earthLikePlanet = new Planet(new Vector2(_playArea.Width - 300, _playArea.Height - 200), "Earth-Like planet", 96, 96, 77, 0.1f, true, 2.0f, "Earth-Like Planet");
+
+            // Add the planets to the game world
+            AddGameObject(alienPlanet);
+            AddGameObject(earthLikePlanet);
+
+            // Generate the first objective (will use these planets when creating CollectCargoObjective)
+            GenerateNewObjective(alienPlanet, earthLikePlanet);
         }
 
         public void Load(ContentManager content)
@@ -94,6 +105,7 @@ namespace SpaceDefence
                 {
                     if (_gameObjects[i].CheckCollision(_gameObjects[j]))
                     {
+                        // System.Diagnostics.Debug.WriteLine($"Collision detected between {_gameObjects[i].GetType().Name} and {_gameObjects[j].GetType().Name}");
                         _gameObjects[i].OnCollision(_gameObjects[j]);
                         _gameObjects[j].OnCollision(_gameObjects[i]);
                     }
@@ -153,7 +165,6 @@ namespace SpaceDefence
             {
                 AddGameObject(new Supply(false));
                 _powerUpSpawnTimer = 30f;
-                // System.Diagnostics.Debug.WriteLine("Spawned laser crate");
             }
 
             _bombPowerUpSpawnTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -161,6 +172,14 @@ namespace SpaceDefence
             {
                 ScheduleBombPowerUpSpawn();
                 _bombPowerUpSpawnTimer = 30f;
+            }
+
+            // Update the current objective
+            _currentObjective?.Update(this);
+            if (_currentObjective?.IsCompleted == true)
+            {
+                _score++;
+                GenerateNewObjective();
             }
         }
 
@@ -170,33 +189,21 @@ namespace SpaceDefence
             {
                 gameObject.Draw(gameTime, spriteBatch);
             }
+
+            // Draw the current objective
+            _currentObjective?.Draw(spriteBatch, _content.Load<SpriteFont>("smallText"));
         }
 
-        /// <summary>
-        /// Add a new GameObject to the GameManager. 
-        /// The GameObject will be added at the start of the next Update step. 
-        /// Once it is added, the GameManager will ensure all steps of the game loop will be called on the object automatically. 
-        /// </summary>
-        /// <param name="gameObject"> The GameObject to add. </param>
         public void AddGameObject(GameObject gameObject)
         {
             _toBeAdded.Add(gameObject);
         }
 
-        /// <summary>
-        /// Remove GameObject from the GameManager. 
-        /// The GameObject will be removed at the start of the next Update step and its Destroy() method will be called.
-        /// After that the object will no longer receive any updates.
-        /// </summary>
-        /// <param name="gameObject"> The GameObject to Remove. </param>
         public void RemoveGameObject(GameObject gameObject)
         {
             _toBeRemoved.Add(gameObject);
         }
 
-        /// <summary>
-        /// Get a random location in the play area.
-        /// </summary>
         public Vector2 RandomScreenLocation()
         {
             return new Vector2(
@@ -212,6 +219,8 @@ namespace SpaceDefence
             _asteroidRespawnTimer = 0;
             _elapsedTime = 0;
             _nextAlienIndex = 0;
+            _score = 0;
+            GenerateNewObjective();
         }
 
         public void ScheduleAsteroidSpawn()
@@ -237,5 +246,45 @@ namespace SpaceDefence
             return _gameObjects;
         }
 
+        private void GenerateNewObjective(Planet alienPlanet = null, Planet earthLikePlanet = null)
+        {
+            int objectiveType = RNG.Next(3);
+            switch (objectiveType)
+            {
+                case 0:
+                    // Use the provided planets or create new ones if not provided
+                    var sourcePlanet = alienPlanet ?? new Planet(new Vector2(150, 200), "Alien planet", 96, 96, 77, 0.05f, true, 3.0f, "Alien Planet");
+                    var destPlanet = earthLikePlanet ?? new Planet(new Vector2(_playArea.Width - 300, _playArea.Height - 200), "Earth-Like planet", 96, 96, 77, 0.1f, true, 2.0f, "Earth-Like Planet");
+
+                    _currentObjective = new CollectCargoObjective(
+                        sourcePlanet,
+                        destPlanet,
+                        _content
+                    );
+                    break;
+                case 1:
+                    _currentObjective = new KillAliensObjective(RNG.Next(3, 6));
+                    break;
+                case 2:
+                    _currentObjective = new DestroyAsteroidsObjective(RNG.Next(1, 4));
+                    break;
+            }
+        }
+
+        public void AlienKilled()
+        {
+            if (_currentObjective is KillAliensObjective killAliensObjective)
+            {
+                killAliensObjective.AlienKilled();
+            }
+        }
+
+        public void AsteroidDestroyed()
+        {
+            if (_currentObjective is DestroyAsteroidsObjective destroyAsteroidsObjective)
+            {
+                destroyAsteroidsObjective.AsteroidDestroyed();
+            }
+        }
     }
 }

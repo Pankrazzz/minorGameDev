@@ -37,6 +37,8 @@ namespace SpaceDefence
         {
             if (other is Bullet || other is Laser)
             {
+                GameManager.GetGameManager().AlienKilled();
+
                 GameManager.GetGameManager().RemoveGameObject(this);
                 GameManager.GetGameManager().AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Alien));
                 GameManager.GetGameManager().AddGameObject(new Alien(speed / baseSpeed + 0.1f));
