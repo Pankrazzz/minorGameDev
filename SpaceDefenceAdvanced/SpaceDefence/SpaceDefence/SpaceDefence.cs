@@ -162,7 +162,6 @@ namespace SpaceDefence
                     _gameManager.Draw(gameTime, _spriteBatch);
                     _spriteBatch.End();
 
-                    // Draw the timer, score, and objective
                     _spriteBatch.Begin();
                     DrawTimer(gameTime);
                     DrawScore();

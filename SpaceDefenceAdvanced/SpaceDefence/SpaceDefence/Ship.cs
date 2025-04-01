@@ -35,6 +35,7 @@ namespace SpaceDefence
             private set
             {
                 _hasBombPowerUp = value;
+                // System.Diagnostics.Debug.WriteLine($"Bomb powerup state: {value}");
             }
         }
 
@@ -47,6 +48,10 @@ namespace SpaceDefence
             }
         }
 
+        /// <summary>
+        /// The player character
+        /// </summary>
+        /// <param name="Position">The ship's starting position</param>
         public Ship(Point Position)
         {
             _rectangleCollider = new RectangleCollider(new Rectangle(Position, Point.Zero));
@@ -60,6 +65,7 @@ namespace SpaceDefence
 
         public override void Load(ContentManager content)
         {
+            // Ship sprites from: https://zintoki.itch.io/space-breaker
             ship_body = content.Load<Texture2D>("ship_body");
             base_turret = content.Load<Texture2D>("base_turret");
             laser_turret = content.Load<Texture2D>("laser_turret");
@@ -112,9 +118,10 @@ namespace SpaceDefence
                 DropBomb();
             }
 
-            // Update turret rotation
+            //// Ai helped me with this part, my math wasn't lining up
             Vector2 direction = transformedMousePosition - _rectangleCollider.shape.Center.ToVector2();
             turretRotation = (float)Math.Atan2(direction.Y, direction.X) + MathHelper.PiOver2;
+            ////
         }
 
         public override void Update(GameTime gameTime)
@@ -173,6 +180,9 @@ namespace SpaceDefence
         {
             if (other is Bomb)
             {
+                // GameManager.GetGameManager().RemoveGameObject(this);
+                // GameManager.GetGameManager().AddGameObject(new Explosion(_rectangleCollider.shape.Center.ToVector2(), ExplosionType.Ship));
+                // ((SpaceDefence)GameManager.GetGameManager().Game).SetGameOver();
                 return;
             }
             base.OnCollision(other);
@@ -236,13 +246,17 @@ namespace SpaceDefence
 
         public void GainBombPowerUp()
         {
+            // System.Diagnostics.Debug.WriteLine("GainBombPowerUp called");
             HasBombPowerUp = true;
+            // System.Diagnostics.Debug.WriteLine($"Powerup gained! HasBomb: {HasBombPowerUp}");
         }
 
         private void DropBomb()
         {
+            // System.Diagnostics.Debug.WriteLine($"DropBomb called. Current state: {HasBombPowerUp}");
             if (!HasBombPowerUp)
             {
+                // System.Diagnostics.Debug.WriteLine("No Bomba :(");
                 return;
             }
 

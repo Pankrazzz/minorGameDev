@@ -4,7 +4,9 @@ using Microsoft.Xna.Framework;
 
 namespace SpaceDefence
 {
-
+    //// I had a couple of bugs in this file, because my math wasnt mathing
+    //// Ai helped me to get some of my math right, but i dont remember which parts i asked for help with
+    //// So just assume a couple of methods, i made together with Ai
     public class LinePieceCollider : Collider, IEquatable<LinePieceCollider>
     {
 

@@ -48,7 +48,6 @@ internal class Bomb : GameObject
         GameManager gm = GameManager.GetGameManager();
         gm.AddGameObject(new Explosion(_circleCollider.Center, ExplosionType.Asteroid, 10.0f));
 
-        // Check for objects in explosion radius
         var explosionArea = new CircleCollider(_circleCollider.Center, _explosionRadius);
         foreach (var obj in gm.GetGameObjects())
         {

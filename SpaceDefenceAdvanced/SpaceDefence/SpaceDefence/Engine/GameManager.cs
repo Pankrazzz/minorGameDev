@@ -73,11 +73,9 @@ namespace SpaceDefence
             var alienPlanet = new Planet(new Vector2(150, 200), "Alien planet", 96, 96, 77, 0.05f, true, 3.0f, "Alien Planet");
             var earthLikePlanet = new Planet(new Vector2(_playArea.Width - 300, _playArea.Height - 200), "Earth-Like planet", 96, 96, 77, 0.1f, true, 2.0f, "Earth-Like Planet");
 
-            // Add the planets to the game world
             AddGameObject(alienPlanet);
             AddGameObject(earthLikePlanet);
 
-            // Generate the first objective (will use these planets when creating CollectCargoObjective)
             GenerateNewObjective(alienPlanet, earthLikePlanet);
         }
 
@@ -174,7 +172,6 @@ namespace SpaceDefence
                 _bombPowerUpSpawnTimer = 30f;
             }
 
-            // Update the current objective
             _currentObjective?.Update(this);
             if (_currentObjective?.IsCompleted == true)
             {
@@ -190,7 +187,6 @@ namespace SpaceDefence
                 gameObject.Draw(gameTime, spriteBatch);
             }
 
-            // Draw the current objective
             _currentObjective?.Draw(spriteBatch, _content.Load<SpriteFont>("smallText"));
         }
 
@@ -251,8 +247,8 @@ namespace SpaceDefence
             int objectiveType = RNG.Next(3);
             switch (objectiveType)
             {
+                //// Had a bug where the planets were not updated with the objective, fixed with Ai
                 case 0:
-                    // Use the provided planets or create new ones if not provided
                     var sourcePlanet = alienPlanet ?? new Planet(new Vector2(150, 200), "Alien planet", 96, 96, 77, 0.05f, true, 3.0f, "Alien Planet");
                     var destPlanet = earthLikePlanet ?? new Planet(new Vector2(_playArea.Width - 300, _playArea.Height - 200), "Earth-Like planet", 96, 96, 77, 0.1f, true, 2.0f, "Earth-Like Planet");
 
@@ -262,6 +258,7 @@ namespace SpaceDefence
                         _content
                     );
                     break;
+                ////
                 case 1:
                     _currentObjective = new KillAliensObjective(RNG.Next(3, 6));
                     break;
